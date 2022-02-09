@@ -147,43 +147,27 @@ def compute_avg_monthly_difference(time_series, first_year, last_year):
     print ('\n----: "{}"'.format(listaanno))
 
     listamedia=[]
+    
     for i in range(12):
         media=0.0
-        nzeri=0
+        annidivisione=0
+        for j in range(1, nanni):
+            print("---------------------")
+            if int(listaanno[-j][i]) != 0 :
+                print ('numero passeggeri last: "{}"'.format(listaanno[-j][i])) 
+                for z in range (j+1, nanni+1):
+                    if int(listaanno[-z][i]) != 0:
+                        print ('numero passeggeri first: "{}"'.format(listaanno[-z][i])) 
+                        media+=int(listaanno[-j][i])-int(listaanno[-z][i])
+                        annidivisione+=1
+                        break
 
-        for z in range(0, nanni):
-            if (int(listaanno[z][i])) == 0:
-                nzeri+=1
-        checkz=0
-        count= nanni-nzeri
-        if count>=2:
-            while count>=2:
-                for j in range(1, nanni):
-                    if int(listaanno[-j][i]) != 0 :
-                        c=0
-                        while checkz==0:
-                            if int(listaanno[-j-c][i]) !=0:
-                                media+=int(listaanno[-j][i])-int(listaanno[-j-c][i])
-                                chechkz=1
-                            else:
-                                c+=1
-                        
-                        count-=1
-
-                    
-
-
-        print ('\n0000000: "{}"'.format(nzeri))
-   #     for j in range(1, nanni):
-    #        if int(listaanno[-j-1][i]) == 0 :
-     #           j+=0
-      #      else:
-       #         media+=int(listaanno[-j][i])-int(listaanno[-j-1][i])
+                
 
         print ('****: "{}"'.format(media))      
         print ('****: "{}"'.format(nanni-1)) 
-        print ('****: "{}"'.format(media/(nanni-1)))     
-        listamedia.append(round((media/(nanni-1)), 2))
+        print ('****: "{}"'.format(media/(annidivisione)))     
+        listamedia.append(round((media/(annidivisione)), 2))
             
             
     return listamedia
@@ -193,4 +177,4 @@ time_series = time_series_file.get_data()
 print('Nome del file: "{}"'.format(time_series_file.name))
 #print('Dati contenuti nel file: \n"{}"'.format(time_series_file.get_data()))
 
-print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1949", "1951")))
+print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1954", "1958")))
