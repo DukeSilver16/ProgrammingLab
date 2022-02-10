@@ -1,7 +1,7 @@
 
 class ExamException(Exception):
     pass
-#raise ExamException('Errore, lista valori vuota')
+
 class CSVTimeSeriesFile:
 
     def __init__(self, name):
@@ -9,6 +9,7 @@ class CSVTimeSeriesFile:
         
     def get_data(self):
         
+        #verifico che il file sia leggibile
         try:
             my_file = open(self.name, 'r')
             s=my_file.readline()
@@ -23,8 +24,9 @@ class CSVTimeSeriesFile:
         posmese=-1
         pospersone=-1
         pos=0
+
+        #cerco le colonne dei dati
         for colonna in s:
-            print(colonna)
             if colonna.lower().strip() == 'date':
                 posmese=pos
             if colonna.lower().strip() == "passengers":
@@ -36,6 +38,7 @@ class CSVTimeSeriesFile:
         if pospersone==-1:
             raise ExamException('Errore, non esiste la colonna: passengers')
 
+        #creo la lista data
         for line in my_file:
         
             elements = line.split(',')
@@ -51,44 +54,45 @@ class CSVTimeSeriesFile:
                 data.append(temp)
                 temp = []
 
-        print (data)
         my_file.close()
+
+        #verifico che la lista sia ordinata
         countmese = 1
         first=1
-
         for i in range (len(data)-1):
             if  (data[i][0])[4] != '-':
                 raise ExamException('Errore, formato data deverso da yyyy-mm')
-
             if first != 1:
+                
 
                 if countmese == 1:
                     if int((data[i-1][0])[0:4])>=int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
                         raise ExamException('Errore, lista non ordinata')
-                    if int((data[i-1][0])[5:7])!=12 or int((data[i+1][0])[5:7])!=2:
+                    if int((data[i-1][0])[5:7])>12 or int((data[i+1][0])[5:7])>12:
                         raise ExamException('Errore, lista non ordinata')
-                    countmese = 2
+                    countmese = int((data[i+1][0])[5:7])
                 elif countmese == 12:
                     if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<=int((data[i][0])[0:4]):
                         raise ExamException('Errore, lista non ordinata')
-                    if int((data[i-1][0])[5:7])!=11 or int((data[i+1][0])[5:7])!=1:
+                    if int((data[i-1][0])[5:7])>12 or int((data[i+1][0])[5:7])>12:
                         raise ExamException('Errore, lista non ordinata')
-                    countmese=1
+                    countmese=int((data[i+1][0])[5:7])
                 else :
                     if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
                         raise ExamException('Errore, lista non ordinata')
                     if int((data[i-1][0])[5:7])>int((data[i][0])[5:7]) or int((data[i+1][0])[5:7])<int((data[i][0])[5:7]):
                         raise ExamException('Errore, lista non ordinata')
-                    countmese+=1
+                    countmese=int((data[i+1][0])[5:7])
                     
             if first == 1:
                 if int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
                     raise ExamException('Errore, lista non ordinata')
-                if int((data[i+1][0])[5:7])!=2:
+                if int((data[i+1][0])[5:7])>12:
                     raise ExamException('Errore, lista non ordinata')
-                countmese = 2
+                countmese = int((data[i+1][0])[5:7])
                 first=0
 
+        #verifico che il dato nella colonna dei passeggeri sia un numero positivo
         for passeggeri in data:
             if not passeggeri[1].isnumeric():
                 passeggeri[1]=0
@@ -104,6 +108,7 @@ def compute_avg_monthly_difference(time_series, first_year, last_year):
     if isinstance(type(first_year), str):
         raise ExamException('Errore, last_year non è stato dato come stringa')
 
+    #verifico che i due anni siano presenti nella lista
     check1 = 0
     check2 = 0
     for dato in time_series:
@@ -124,49 +129,38 @@ def compute_avg_monthly_difference(time_series, first_year, last_year):
 
     lista = []
     listaanno = []
-    for i in range(nanni):
-        listaanno.append([])
-    
 
+    #creo una lista con solo gli anni interessati
     for dato in time_series:
         if int(dato[0][0:4])>=primo_anno and int(dato[0][0:4])<=ultimo_anno:
             lista.append(dato)
 
     anno = int(lista[0][0][0:4])
     i=0
+
+    #creo una lista che contiene solo i dati dei passeggeri
     for dato in lista:
-        
         if int(dato[0][0:4])==anno:
             listaanno[i].append(dato[1])
         else:
             anno = int(dato[0][0:4])
             i+=1
             listaanno[i].append(dato[1])
-        
-    
-    print ('\n----: "{}"'.format(listaanno))
 
     listamedia=[]
     
+    #calcolo la media
     for i in range(12):
         media=0.0
         annidivisione=0
         for j in range(1, nanni):
-            print("---------------------")
-            if int(listaanno[-j][i]) != 0 :
-                print ('numero passeggeri last: "{}"'.format(listaanno[-j][i])) 
+            if int(listaanno[-j][i]) != 0 : 
                 for z in range (j+1, nanni+1):
-                    if int(listaanno[-z][i]) != 0:
-                        print ('numero passeggeri first: "{}"'.format(listaanno[-z][i])) 
+                    if int(listaanno[-z][i]) != 0: 
                         media+=int(listaanno[-j][i])-int(listaanno[-z][i])
                         annidivisione+=1
                         break
-
-                
-
-        print ('****: "{}"'.format(media))      
-        print ('****: "{}"'.format(nanni-1)) 
-        print ('****: "{}"'.format(media/(annidivisione)))     
+    
         listamedia.append(round((media/(annidivisione)), 2))
             
             
@@ -174,7 +168,36 @@ def compute_avg_monthly_difference(time_series, first_year, last_year):
 
 time_series_file = CSVTimeSeriesFile(name='data.csv')
 time_series = time_series_file.get_data()
-print('Nome del file: "{}"'.format(time_series_file.name))
+#print('Nome del file: "{}"'.format(time_series_file.name))
 #print('Dati contenuti nel file: \n"{}"'.format(time_series_file.get_data()))
 
-print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1954", "1958")))
+#print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1949", "1951")
+print(compute_avg_monthly_difference(time_series, "1949", "1951"))
+
+
+"""
+        firstDate_year = int((data[0][0])[0:4])*12
+        firstDate_month = int((data[0][0])[5:7])
+        lastDate_year = int((data[-1][0])[0:4])
+        lastDate_month = int((data[-1][0])[5:7])*12
+        durata=lastDate_year-(firstDate_year-firstDate_month)+lastDate_month
+
+        entry=1
+        print(int((data[entry][0])[5:7].strip()))
+        while len(data) != durata:
+
+            new_entry=[]
+            if (data[entry][0])[0:4]==(data[entry-1][0])[0:4] and int((data[entry][0])[5:6]) != int((data[entry-1][0])[5:6]) :
+                new_entry.append(str(int((data[entry][0])[0:4])))
+                new_entry.append(str(int((data[entry][0])[0:4])))
+                data.insert(entry, new_entry)
+
+            if int((data[entry][0])[0:4])>=int((data[entry-1][0])[0:4]):
+                new_entry.append(str(int((data[entry][0])[0:4])+1))
+                new_entry.append("01")
+                data.insert(entry, new_entry)
+
+            entry+=1
+            
+
+"""
