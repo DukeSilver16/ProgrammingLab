@@ -95,14 +95,24 @@ class CSVTimeSeriesFile:
         #verifico che il dato nella colonna dei passeggeri sia un numero positivo
         for passeggeri in data:
             if not passeggeri[1].isnumeric():
-                passeggeri[1]=0
+                passeggeri[1]=-1
 
 
 
         return data
 
-def compute_avg_monthly_difference(time_series, first_year, last_year):
+def detect_similar_monthly_variations(time_series, years):
 
+    first_year=years[0]
+    last_year=years[1]
+    
+    if int(first_year)>int(last_year):
+        temp=last_year
+        last_year=first_year
+        first_year=temp
+    
+    if int(first_year)!=int(last_year)-1:
+        raise ExamException('Errore, i due anno dati in input non sono consecutivi')
     if isinstance(type(first_year), str):
         raise ExamException('Errore, first_year non è stato dato come stringa')
     if isinstance(type(first_year), str):
@@ -127,44 +137,45 @@ def compute_avg_monthly_difference(time_series, first_year, last_year):
     nanni = ultimo_anno-primo_anno+1
     output = []
 
-    lista = []
-    listaanno = []
+    anno1=[None,None,None,None,None,None,None,None,None,None,None,None]
+    anno2=[None,None,None,None,None,None,None,None,None,None,None,None]
 
-    #creo una lista con solo gli anni interessati
     for dato in time_series:
-        if int(dato[0][0:4])>=primo_anno and int(dato[0][0:4])<=ultimo_anno:
-            lista.append(dato)
+        if dato[0][0:4]==first_year:
+            if dato[1]!=-1:
+                anno1[int(dato[0][5:7])-1]=int(dato[1])
+            else:
+                anno1[int(dato[0][5:7])-1]=None
+    for dato in time_series:
+        if dato[0][0:4]==last_year:
+            if dato[1]!=-1:
+                anno2[int(dato[0][5:7])-1]=int(dato[1])
+            else:
+                anno2[int(dato[0][5:7])-1]=None
 
-    anno = int(lista[0][0][0:4])
-    i=0
-
-    #creo una lista che contiene solo i dati dei passeggeri
-    for dato in lista:
-        if int(dato[0][0:4])==anno:
-            listaanno[i].append(dato[1])
+    listadifferenza=[[],[]]
+    for i in range( 11 ):
+        if anno1[i+1]!= None and anno1[i]!= None:
+            listadifferenza[0].append(abs(anno1[i+1]-anno1[i]))
         else:
-            anno = int(dato[0][0:4])
-            i+=1
-            listaanno[i].append(dato[1])
+            listadifferenza[0].append(None)
+    for i in range( 11 ):
+        if anno2[i+1]!= None and anno2[i]!= None:
+            listadifferenza[1].append(abs(anno2[i+1]-anno2[i]))
+        else:
+            listadifferenza[1].append(None)
 
-    listamedia=[]
-    
-    #calcolo la media
-    for i in range(12):
-        media=0.0
-        annidivisione=0
-        for j in range(1, nanni):
-            if int(listaanno[-j][i]) != 0 : 
-                for z in range (j+1, nanni+1):
-                    if int(listaanno[-z][i]) != 0: 
-                        media+=int(listaanno[-j][i])-int(listaanno[-z][i])
-                        annidivisione+=1
-                        break
-    
-        listamedia.append(round((media/(annidivisione)), 2))
-            
-            
-    return listamedia
+    variazione=[]
+    print (listadifferenza)
+    for i in range (11):
+        if listadifferenza[0][i]!=None and listadifferenza[1][i]!=None:
+            if abs(listadifferenza[0][i] - listadifferenza[1][i])<=2:
+                variazione.append(True)
+            else:
+                variazione.append(False)
+        else:
+            variazione.append(False)
+    return variazione
 
 time_series_file = CSVTimeSeriesFile(name='data.csv')
 time_series = time_series_file.get_data()
@@ -172,32 +183,5 @@ time_series = time_series_file.get_data()
 #print('Dati contenuti nel file: \n"{}"'.format(time_series_file.get_data()))
 
 #print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1949", "1951")
-print(compute_avg_monthly_difference(time_series, "1949", "1951"))
+print(detect_similar_monthly_variations(time_series, ["1950", "1949"]))
 
-
-"""
-        firstDate_year = int((data[0][0])[0:4])*12
-        firstDate_month = int((data[0][0])[5:7])
-        lastDate_year = int((data[-1][0])[0:4])
-        lastDate_month = int((data[-1][0])[5:7])*12
-        durata=lastDate_year-(firstDate_year-firstDate_month)+lastDate_month
-
-        entry=1
-        print(int((data[entry][0])[5:7].strip()))
-        while len(data) != durata:
-
-            new_entry=[]
-            if (data[entry][0])[0:4]==(data[entry-1][0])[0:4] and int((data[entry][0])[5:6]) != int((data[entry-1][0])[5:6]) :
-                new_entry.append(str(int((data[entry][0])[0:4])))
-                new_entry.append(str(int((data[entry][0])[0:4])))
-                data.insert(entry, new_entry)
-
-            if int((data[entry][0])[0:4])>=int((data[entry-1][0])[0:4]):
-                new_entry.append(str(int((data[entry][0])[0:4])+1))
-                new_entry.append("01")
-                data.insert(entry, new_entry)
-
-            entry+=1
-            
-
-"""
