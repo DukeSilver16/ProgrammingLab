@@ -60,37 +60,40 @@ class CSVTimeSeriesFile:
         countmese = 1
         first=1
         for i in range (len(data)-1):
-            if  (data[i][0])[4] != '-':
-                raise ExamException('Errore, formato data deverso da yyyy-mm')
-            if first != 1:
-                
-
-                if countmese == 1:
-                    if int((data[i-1][0])[0:4])>=int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
+            if  len(data[i][0])<7 or ( ((data[i][0])[5:7]).isnumeric() and (data[i][0])[4] != '-'):
+                data.pop(i)
+                #raise ExamException('Errore, formato data deverso da yyyy-mm')
+                if first != 1:
+                    
+    
+                    if countmese == 1:
+                        if int((data[i-1][0])[0:4])>=int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
+                            raise ExamException('Errore, lista non ordinata')
+                        if int((data[i-1][0])[5:7])>12 or int((data[i+1][0])[5:7])>12:
+                            raise ExamException('Errore, lista non ordinata')
+                        countmese = int((data[i+1][0])[5:7])
+                    elif countmese == 12:
+                        if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<=int((data[i][0])[0:4]):
+                            raise ExamException('Errore, lista non ordinata')
+                        if int((data[i-1][0])[5:7])>12 or int((data[i+1][0])[5:7])>12:
+                            raise ExamException('Errore, lista non ordinata')
+                        countmese=int((data[i+1][0])[5:7])
+                    else :
+                        if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
+                            raise ExamException('Errore, lista non ordinata')
+                        if (int((data[i][0])[0:4])==int((data[i+1][0])[0:4]) and int((data[i][0])[0:4])==int((data[i-1][0])[0:4]) ) and (int((data[i-1][0])[5:7])>=int((data[i][0])[5:7]) or int((data[i+1][0])[5:7])<=int((data[i][0])[5:7])):
+                            raise ExamException('Errore, lista non ordinata')
+                        if int((data[i+1][0])[5:7])>12:
+                            raise ExamException('Errore, lista non ordinata')
+                        countmese=int((data[i+1][0])[5:7])
+                        
+                if first == 1:
+                    if int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
                         raise ExamException('Errore, lista non ordinata')
-                    if int((data[i-1][0])[5:7])>12 or int((data[i+1][0])[5:7])>12:
+                    if int((data[i+1][0])[5:7])>12:
                         raise ExamException('Errore, lista non ordinata')
                     countmese = int((data[i+1][0])[5:7])
-                elif countmese == 12:
-                    if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<=int((data[i][0])[0:4]):
-                        raise ExamException('Errore, lista non ordinata')
-                    if int((data[i-1][0])[5:7])>12 or int((data[i+1][0])[5:7])>12:
-                        raise ExamException('Errore, lista non ordinata')
-                    countmese=int((data[i+1][0])[5:7])
-                else :
-                    if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
-                        raise ExamException('Errore, lista non ordinata')
-                    if int((data[i-1][0])[5:7])>int((data[i][0])[5:7]) or int((data[i+1][0])[5:7])<int((data[i][0])[5:7]):
-                        raise ExamException('Errore, lista non ordinata')
-                    countmese=int((data[i+1][0])[5:7])
-                    
-            if first == 1:
-                if int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
-                    raise ExamException('Errore, lista non ordinata')
-                if int((data[i+1][0])[5:7])>12:
-                    raise ExamException('Errore, lista non ordinata')
-                countmese = int((data[i+1][0])[5:7])
-                first=0
+                    first=0
 
         #verifico che il dato nella colonna dei passeggeri sia un numero positivo
         for passeggeri in data:
@@ -183,5 +186,5 @@ time_series = time_series_file.get_data()
 #print('Dati contenuti nel file: \n"{}"'.format(time_series_file.get_data()))
 
 #print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1949", "1951")
-print(detect_similar_monthly_variations(time_series, ["1950", "1949"]))
+print(detect_similar_monthly_variations(time_series, ["1950", "1951"]))
 
