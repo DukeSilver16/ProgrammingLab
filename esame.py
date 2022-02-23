@@ -80,7 +80,6 @@ class CSVTimeSeriesFile:
                         raise ExamException('Errore, lista non ordinata')
                     countmese=int((data[i+1][0])[5:7])
                 else :
-                    print(int((data[i-1][0])[5:7]))
                     if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
                         raise ExamException('Errore, lista non ordinata')
                     if (int((data[i][0])[0:4])==int((data[i+1][0])[0:4]) and int((data[i][0])[0:4])==int((data[i-1][0])[0:4]) ) and (int((data[i-1][0])[5:7])>=int((data[i][0])[5:7]) or int((data[i+1][0])[5:7])<=int((data[i][0])[5:7])):
@@ -115,12 +114,12 @@ def detect_similar_monthly_variations(time_series, years):
         temp=last_year
         last_year=first_year
         first_year=temp
-    
+        
     if int(first_year)!=int(last_year)-1:
         raise ExamException('Errore, i due anno dati in input non sono consecutivi')
-    if isinstance(type(first_year), str):
+    if isinstance(first_year, str)==False:
         raise ExamException('Errore, first_year non è stato dato come stringa')
-    if isinstance(type(first_year), str):
+    if isinstance(first_year, str)==False:
         raise ExamException('Errore, last_year non è stato dato come stringa')
 
     #verifico che i due anni siano presenti nella lista
@@ -171,7 +170,6 @@ def detect_similar_monthly_variations(time_series, years):
             listadifferenza[1].append(None)
 
     variazione=[]
-    print (listadifferenza)
     for i in range (11):
         if listadifferenza[0][i]!=None and listadifferenza[1][i]!=None:
             if abs(listadifferenza[0][i] - listadifferenza[1][i])<=2:
@@ -181,12 +179,4 @@ def detect_similar_monthly_variations(time_series, years):
         else:
             variazione.append(False)
     return variazione
-
-time_series_file = CSVTimeSeriesFile(name='data.csv')
-time_series = time_series_file.get_data()
-#print('Nome del file: "{}"'.format(time_series_file.name))
-#print('Dati contenuti nel file: \n"{}"'.format(time_series_file.get_data()))
-
-#print('\nOutput: "{}"' .format(compute_avg_monthly_difference(time_series, "1949", "1951")
-print(detect_similar_monthly_variations(time_series, ["1950", "1951"]))
 
