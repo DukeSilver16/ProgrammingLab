@@ -42,17 +42,18 @@ class CSVTimeSeriesFile:
         for line in my_file:
         
             elements = line.split(',')
+            try:
+                elements[posmese] = elements[posmese].strip()
+                elements[pospersone] = elements[pospersone].strip()
 
-            elements[posmese] = elements[posmese].strip()
-            elements[pospersone] = elements[pospersone].strip()
-
+                if elements[posmese] != 'date':
             
-            if elements[posmese] != 'date':
-            
-                temp.append(elements[posmese])
-                temp.append(elements[pospersone])
-                data.append(temp)
-                temp = []
+                    temp.append(elements[posmese])
+                    temp.append(elements[pospersone])
+                    data.append(temp)
+                    temp = []
+            except:
+                pass
 
         my_file.close()
 
@@ -63,6 +64,7 @@ class CSVTimeSeriesFile:
             if  len(data[i][0])<7 or ( ((data[i][0])[5:7]).isnumeric() and (data[i][0])[4] != '-'):
                 data.pop(i)
                 #raise ExamException('Errore, formato data deverso da yyyy-mm')
+            else:
                 if first != 1:
                     
     
@@ -79,6 +81,7 @@ class CSVTimeSeriesFile:
                             raise ExamException('Errore, lista non ordinata')
                         countmese=int((data[i+1][0])[5:7])
                     else :
+                        print(int((data[i-1][0])[5:7]))
                         if int((data[i-1][0])[0:4])>int((data[i][0])[0:4]) or int((data[i+1][0])[0:4])<int((data[i][0])[0:4]):
                             raise ExamException('Errore, lista non ordinata')
                         if (int((data[i][0])[0:4])==int((data[i+1][0])[0:4]) and int((data[i][0])[0:4])==int((data[i-1][0])[0:4]) ) and (int((data[i-1][0])[5:7])>=int((data[i][0])[5:7]) or int((data[i+1][0])[5:7])<=int((data[i][0])[5:7])):
